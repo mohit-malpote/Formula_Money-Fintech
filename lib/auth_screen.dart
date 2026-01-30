@@ -69,6 +69,12 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // 1. Add the logo using the 'screenshot' path
+            Image.asset(
+              'screenshots/logo.jpeg', 
+              height: 100, 
+            ),
+            const SizedBox(height: 20),
             Text("Formula Money", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
             const SizedBox(height: 30),
             
