@@ -1,6 +1,6 @@
 <<<<<<< HEAD
 # Formula Money 💸
-**A Gamified Financial Habit Macker**
+**A Gamified Financial Habit Maker**
 
 ## 🚀 The Mission
 Formula Money helps users master their personal finances through a "challenge" format. By combining real-time leaderboards with AI-driven progress analysis, we turn boring budgeting into a competitive game.
