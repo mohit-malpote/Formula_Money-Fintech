@@ -1,0 +1,78 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Restore google-services.json if secret exists
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          fi
+
+      - name: Verify google-services.json exists
+        run: |
+          if [ ! -f "android/app/google-services.json" ]; then
+            echo "::error::android/app/google-services.json is missing! Please provide it in android/app/ or set GOOGLE_SERVICES_JSON secret."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Release APK
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.API_KEY }}
+        run: |
+          if [ -n "$GEMINI_API_KEY" ]; then
+            flutter build apk --release --dart-define=API_KEY="$GEMINI_API_KEY"
+          else
+            flutter build apk --release
+          fi
+
+      - name: Prepare APK Asset
+        run: cp build/app/outputs/flutter-apk/app-release.apk Formula-Money.apk
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Formula-Money.apk
+          name: Formula Money ${{ github.ref_name }}
+          body: |
+            ## Formula Money Release ${{ github.ref_name }} 💸
+
+            ### What's New:
+            - Fixed Cloud Firestore permissions and connection.
+            - Added automatic user document healing on login.
+            - Added password reset ("Forgot Password?") capability.
+            - Enhanced login/signup UX with input trimming and friendly error messages.
+
+            📲 Download **Formula-Money.apk** below to install!
+          draft: false
+          prerelease: false
