@@ -50,9 +50,12 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.API_KEY }}
         run: |
-          if [ -n "$GEMINI_API_KEY" ]; then
-            flutter build apk --release --dart-define=API_KEY="$GEMINI_API_KEY"
+          CLEAN_KEY=$(echo "$GEMINI_API_KEY" | tr -d '\r\n"' | sed "s/^'//;s/'$//" | xargs)
+          if [ -n "$CLEAN_KEY" ]; then
+            echo "API key detected in secrets. Building with API key..."
+            flutter build apk --release --dart-define=API_KEY="$CLEAN_KEY" --dart-define=GEMINI_API_KEY="$CLEAN_KEY"
           else
+            echo "::warning::No GEMINI_API_KEY or API_KEY secret found! Building without API key."
             flutter build apk --release
           fi
 

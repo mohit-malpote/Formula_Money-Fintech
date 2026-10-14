@@ -4,10 +4,22 @@ import 'package:firebase_core/firebase_core.dart';
 import 'auth_screen.dart';
 import 'firebase_service.dart';
 import 'dart:convert';
-const String globalApiKey = const String.fromEnvironment('API_KEY');
+const String _rawApiKey = String.fromEnvironment(
+  'API_KEY',
+  defaultValue: String.fromEnvironment('GEMINI_API_KEY'),
+);
+
+String get globalApiKey {
+  String key = _rawApiKey.trim();
+  if ((key.startsWith('"') && key.endsWith('"')) ||
+      (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.substring(1, key.length - 1).trim();
+  }
+  return key;
+}
 
 void main() async {
-  print("DEBUG API KEY: ${const String.fromEnvironment('API_KEY')}");
+  print("DEBUG API KEY CONFIGURED: ${globalApiKey.isNotEmpty ? "YES (${globalApiKey.substring(0, globalApiKey.length > 6 ? 6 : globalApiKey.length)}...)" : "NO (EMPTY)"}");
   // 1. Tell Flutter to wait for the engine to boot
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -62,6 +74,15 @@ class _SurveyScreenState extends State<SurveyScreen> {
 
   // AI GOAL GENERATION
   Future<void> _generateGoals() async {
+    if (globalApiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Error: Gemini API key is missing in this build. Please run with --dart-define=API_KEY=your_key or install the Release APK from GitHub Releases."),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 6),
+      ));
+      return;
+    }
+
     setState(() => _isGenerating = true);
 
     try {
@@ -97,6 +118,15 @@ class _SurveyScreenState extends State<SurveyScreen> {
 
   // AI Analysis for Suggestion Change
   Future<void> _analyzeSuggestedGoal(String userSuggestion) async {
+    if (globalApiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Error: Gemini API key is missing in this build."),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 4),
+      ));
+      return;
+    }
+
     setState(() => _isGenerating = true);
     
     final model = GenerativeModel(
@@ -311,6 +341,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _refreshDailyGoals() async {
+    if (globalApiKey.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Gemini API key is not configured in this build."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isAIThinking = true);
     
     final model = GenerativeModel(
@@ -471,6 +513,18 @@ class _AiBotTabState extends State<AiBotTab> {
 
   Future<void> _askAi() async {
     if (_queryController.text.isEmpty) return;
+
+    if (globalApiKey.isEmpty) {
+      setState(() {
+        _messages.add({"role": "user", "content": _queryController.text});
+        _messages.add({
+          "role": "bot",
+          "content": "Gemini API key is not configured in this build. Please run with --dart-define=API_KEY=... or install the Release APK from GitHub."
+        });
+        _queryController.clear();
+      });
+      return;
+    }
 
     final userMessage = _queryController.text;
     setState(() {
