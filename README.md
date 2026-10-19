@@ -13,7 +13,7 @@ Formula Money helps users master their personal finances through a "challenge" f
 ## 🛠️ Tech Stack
 - **Frontend**: Flutter (Dart)
 - **Backend**: Firebase (Auth & Firestore)
-- **AI**: Google Gemini Pro (for monthly progress reports)
+- **AI**: Google Gemini (`gemini-3.8-flash` for smart goal generation & financial coaching)
 
 ## 📸 Screenshots
 | Survey | Survey | Goal Confirmation |

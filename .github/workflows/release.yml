@@ -49,14 +49,15 @@ jobs:
       - name: Build Release APK
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'gemini-3.8-flash' }}
         run: |
           CLEAN_KEY=$(echo "$GEMINI_API_KEY" | tr -d '\r\n"' | sed "s/^'//;s/'$//" | xargs)
           if [ -n "$CLEAN_KEY" ]; then
             echo "API key detected in secrets. Building with API key..."
-            flutter build apk --release --dart-define=API_KEY="$CLEAN_KEY" --dart-define=GEMINI_API_KEY="$CLEAN_KEY"
+            flutter build apk --release --dart-define=API_KEY="$CLEAN_KEY" --dart-define=GEMINI_API_KEY="$CLEAN_KEY" --dart-define=GEMINI_MODEL="$GEMINI_MODEL"
           else
             echo "::warning::No GEMINI_API_KEY or API_KEY secret found! Building without API key."
-            flutter build apk --release
+            flutter build apk --release --dart-define=GEMINI_MODEL="$GEMINI_MODEL"
           fi
 
       - name: Prepare APK Asset
@@ -71,10 +72,9 @@ jobs:
             ## Formula Money Release ${{ github.ref_name }} 💸
 
             ### What's New:
-            - Fixed Cloud Firestore permissions and connection.
-            - Added automatic user document healing on login.
-            - Added password reset ("Forgot Password?") capability.
-            - Enhanced login/signup UX with input trimming and friendly error messages.
+            - Upgraded AI model to Gemini 3.8 Flash (`gemini-3.8-flash`) for daily goal generation and financial coaching.
+            - Added configurable `GEMINI_MODEL` environment define support.
+            - Enhanced Gemini API key validation and empty-key diagnostics.
 
             📲 Download **Formula-Money.apk** below to install!
           draft: false

@@ -9,11 +9,19 @@ const String _rawApiKey = String.fromEnvironment(
   defaultValue: String.fromEnvironment('GEMINI_API_KEY'),
 );
 
+const String geminiModel = String.fromEnvironment(
+  'GEMINI_MODEL',
+  defaultValue: 'gemini-3.8-flash',
+);
+
 String get globalApiKey {
   String key = _rawApiKey.trim();
   if ((key.startsWith('"') && key.endsWith('"')) ||
       (key.startsWith("'") && key.endsWith("'"))) {
     key = key.substring(1, key.length - 1).trim();
+  }
+  if (key.isEmpty || key == 'YOUR_GEMINI_API_KEY_HERE' || key == 'YOUR_KEY_HERE') {
+    return '';
   }
   return key;
 }
@@ -87,7 +95,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
 
     try {
       final model = GenerativeModel(
-        model: 'gemini-2.0-flash',
+        model: geminiModel,
         apiKey: globalApiKey,
       );
 
@@ -130,7 +138,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
     setState(() => _isGenerating = true);
     
     final model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: geminiModel,
       apiKey: globalApiKey,
     );
 
@@ -356,7 +364,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isAIThinking = true);
     
     final model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: geminiModel,
       apiKey: globalApiKey,
     );
 
@@ -534,7 +542,7 @@ class _AiBotTabState extends State<AiBotTab> {
     });
 
     final model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: geminiModel,
       apiKey: globalApiKey,
     );
 
